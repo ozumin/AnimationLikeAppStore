@@ -71,17 +71,43 @@ struct CardView: View {
                 }
             }
 
-        VStack {
-            if showDetailView {
-                Spacer()
-                    .frame(height: 200)
+        let dragGesture = DragGesture(minimumDistance: 0)
+            .onChanged { endedGesture in
+                let diff = 1 - endedGesture.translation.height / height
+
+                withAnimation(.spring()) {
+                    if diff < 0.8 {
+                        showDetailView = false
+                        scale = 1
+                    } else if diff < 1 {
+                        scale = diff
+                    }
+                }
+            }
+            .onEnded { _ in
+                withAnimation(.spring()) {
+                    if scale < 0.8 {
+                        showDetailView = false
+                    }
+                    scale = 1
+                }
             }
 
-            Image(systemName: "star")
-                .frame(maxWidth: .infinity)
+        VStack {
+            VStack {
+                if showDetailView {
+                    Spacer()
+                        .frame(height: 200)
+                }
 
-            Text("test")
-                .frame(maxWidth: .infinity)
+                Image(systemName: "star")
+                    .frame(maxWidth: .infinity)
+
+                Text("test")
+                    .frame(maxWidth: .infinity)
+            }
+            .contentShape(Rectangle())
+            .gesture(showDetailView ? dragGesture : nil)
 
             if showDetailView {
                 ScrollView {
@@ -94,12 +120,13 @@ struct CardView: View {
                 }
             }
         }
-        .frame(width: width, height: height)
+        .frame(width: width * scale, height: height * scale)
         .background(Color.blue)
+        .padding(.leading, showDetailView ? (width * (1 - scale)) / 2 : 0)
+        .padding(.top, showDetailView ? (height * (1 - scale)) / 2 : 0)
         .cornerRadius(showDetailView ? 0 : 20)
-        .scaleEffect(scale)
-        .gesture(tapGesture)
-        .gesture(shrinkGesture)
+        .gesture(showDetailView ? nil : tapGesture)
+        .simultaneousGesture(showDetailView ? nil : shrinkGesture)
     }
 }
 
