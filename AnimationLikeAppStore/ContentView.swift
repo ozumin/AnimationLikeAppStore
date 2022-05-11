@@ -29,6 +29,8 @@ struct ContentView: View {
 
 struct CardView: View {
 
+    @State private var scale: CGFloat = 1
+
     private var width: CGFloat {
         UIScreen.main.bounds.width - 10
     }
@@ -38,6 +40,18 @@ struct CardView: View {
     }
 
     var body: some View {
+        let shrinkGesture = LongPressGesture(minimumDuration: 0.1)
+            .onChanged { _ in
+                withAnimation(.spring()) {
+                    self.scale = 0.9
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.spring()) {
+                        self.scale = 1
+                    }
+                }
+            }
+
         VStack {
             Image(systemName: "star")
                 .frame(maxWidth: .infinity)
@@ -48,6 +62,8 @@ struct CardView: View {
         .frame(width: width, height: height)
         .background(Color.blue)
         .cornerRadius(20)
+        .scaleEffect(scale)
+        .gesture(shrinkGesture)
     }
 }
 
